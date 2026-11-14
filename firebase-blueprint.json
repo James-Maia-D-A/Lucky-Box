@@ -1,0 +1,133 @@
+{
+  "entities": {
+    "CashTransaction": {
+      "title": "CashTransaction",
+      "description": "A single dated cashbook entry representing an inflow (income) or outflow (expense).",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Owner Firebase Auth UID."
+        },
+        "type": {
+          "type": "string",
+          "enum": ["income", "expense"],
+          "description": "Transaction direction: income (entrada) or expense (saida)."
+        },
+        "amount": {
+          "type": "number",
+          "description": "Positive monetary value in BRL."
+        },
+        "description": {
+          "type": "string",
+          "description": "User description of the transaction."
+        },
+        "category": {
+          "type": "string",
+          "description": "Optional budget category label."
+        },
+        "dateMillis": {
+          "type": "integer",
+          "description": "Transaction date as UTC epoch milliseconds."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server-assigned creation timestamp via FieldValue.serverTimestamp()."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server-assigned update timestamp via FieldValue.serverTimestamp()."
+        }
+      },
+      "required": ["userId", "type", "amount", "description", "category", "dateMillis", "createdAt", "updatedAt"]
+    },
+    "FinancialGoal": {
+      "title": "FinancialGoal",
+      "description": "A savings or achievement target with a required amount to reach.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Owner Firebase Auth UID."
+        },
+        "title": {
+          "type": "string",
+          "description": "Goal title."
+        },
+        "targetAmount": {
+          "type": "number",
+          "description": "Target amount to reach in BRL."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Optional notes for the goal."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server-assigned creation timestamp via FieldValue.serverTimestamp()."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server-assigned update timestamp via FieldValue.serverTimestamp()."
+        }
+      },
+      "required": ["userId", "title", "targetAmount", "createdAt", "updatedAt"]
+    },
+    "DebtItem": {
+      "title": "DebtItem",
+      "description": "A recorded debt with total and paid amounts for installment payoff planning.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Owner Firebase Auth UID."
+        },
+        "title": {
+          "type": "string",
+          "description": "Debt description or name."
+        },
+        "creditor": {
+          "type": "string",
+          "description": "Optional creditor name."
+        },
+        "totalAmount": {
+          "type": "number",
+          "description": "Total debt amount in BRL."
+        },
+        "paidAmount": {
+          "type": "number",
+          "description": "Amount already paid toward the debt in BRL."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server-assigned creation timestamp via FieldValue.serverTimestamp()."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server-assigned update timestamp via FieldValue.serverTimestamp()."
+        }
+      },
+      "required": ["userId", "title", "totalAmount", "paidAmount", "createdAt", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}/transactions/{transactionId}": {
+      "schema": { "$ref": "#/entities/CashTransaction" },
+      "description": "User-owned infinite dated cashbook entries."
+    },
+    "/users/{userId}/goals/{goalId}": {
+      "schema": { "$ref": "#/entities/FinancialGoal" },
+      "description": "User-owned financial goals."
+    },
+    "/users/{userId}/debts/{debtId}": {
+      "schema": { "$ref": "#/entities/DebtItem" },
+      "description": "User-owned debt records."
+    }
+  }
+}

@@ -1,0 +1,120 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global default-deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidTransaction(data, userId) {
+      return data.userId is string && data.userId == userId &&
+             data.type is string && data.type in ['income', 'expense'] &&
+             data.amount is number && data.amount > 0 && data.amount <= 1000000000 &&
+             data.description is string && data.description.size() >= 1 && data.description.size() <= 120 &&
+             data.category is string && data.category.size() <= 50 &&
+             data.dateMillis is int && data.dateMillis > 0 &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidGoal(data, userId) {
+      return data.userId is string && data.userId == userId &&
+             data.title is string && data.title.size() >= 1 && data.title.size() <= 100 &&
+             data.targetAmount is number && data.targetAmount > 0 && data.targetAmount <= 1000000000 &&
+             (!('notes' in data) || (data.notes is string && data.notes.size() <= 200)) &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidDebt(data, userId) {
+      return data.userId is string && data.userId == userId &&
+             data.title is string && data.title.size() >= 1 && data.title.size() <= 100 &&
+             (!('creditor' in data) || (data.creditor is string && data.creditor.size() <= 80)) &&
+             data.totalAmount is number && data.totalAmount > 0 && data.totalAmount <= 1000000000 &&
+             data.paidAmount is number && data.paidAmount >= 0 && data.paidAmount <= data.totalAmount &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    match /users/{userId}/transactions/{transactionId} {
+      allow get: if isOwner(userId) && isValidId(transactionId);
+      allow list: if isOwner(userId);
+
+      allow create: if isOwner(userId) &&
+                       isValidId(transactionId) &&
+                       incoming().keys().hasAll(['userId', 'type', 'amount', 'description', 'category', 'dateMillis', 'createdAt', 'updatedAt']) &&
+                       incoming().keys().hasOnly(['userId', 'type', 'amount', 'description', 'category', 'dateMillis', 'createdAt', 'updatedAt']) &&
+                       isValidTransaction(incoming(), userId);
+
+      allow update: if isOwner(userId) &&
+                       isValidId(transactionId) &&
+                       isValidTransaction(incoming(), userId) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['type', 'amount', 'description', 'category', 'dateMillis', 'updatedAt']);
+
+      allow delete: if isOwner(userId) && isValidId(transactionId);
+    }
+
+    match /users/{userId}/goals/{goalId} {
+      allow get: if isOwner(userId) && isValidId(goalId);
+      allow list: if isOwner(userId);
+
+      allow create: if isOwner(userId) &&
+                       isValidId(goalId) &&
+                       incoming().keys().hasAll(['userId', 'title', 'targetAmount', 'createdAt', 'updatedAt']) &&
+                       incoming().keys().hasOnly(['userId', 'title', 'targetAmount', 'notes', 'createdAt', 'updatedAt']) &&
+                       isValidGoal(incoming(), userId);
+
+      allow update: if isOwner(userId) &&
+                       isValidId(goalId) &&
+                       isValidGoal(incoming(), userId) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['title', 'targetAmount', 'notes', 'updatedAt']);
+
+      allow delete: if isOwner(userId) && isValidId(goalId);
+    }
+
+    match /users/{userId}/debts/{debtId} {
+      allow get: if isOwner(userId) && isValidId(debtId);
+      allow list: if isOwner(userId);
+
+      allow create: if isOwner(userId) &&
+                       isValidId(debtId) &&
+                       incoming().keys().hasAll(['userId', 'title', 'totalAmount', 'paidAmount', 'createdAt', 'updatedAt']) &&
+                       incoming().keys().hasOnly(['userId', 'title', 'creditor', 'totalAmount', 'paidAmount', 'createdAt', 'updatedAt']) &&
+                       isValidDebt(incoming(), userId);
+
+      allow update: if isOwner(userId) &&
+                       isValidId(debtId) &&
+                       isValidDebt(incoming(), userId) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['title', 'creditor', 'totalAmount', 'paidAmount', 'updatedAt']);
+
+      allow delete: if isOwner(userId) && isValidId(debtId);
+    }
+  }
+}

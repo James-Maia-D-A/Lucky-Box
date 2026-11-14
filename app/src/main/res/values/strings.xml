@@ -1,0 +1,25 @@
+<resources>
+    <string name="app_name">Lucky Box</string>
+    <string name="auth_hero_desc">Ilustração do duende Lucky Box com baú de moedas de ouro e crescimento financeiro</string>
+    <string name="auth_badge">Planilha Inteligente da Sorte</string>
+    <string name="auth_subtitle">Livro caixa completo, médias de gastos, metas, divisão 50/30/20 e plano de dívidas com seu duende guardião.</string>
+    <string name="sign_in_google">Entrar com Google</string>
+    <string name="signing_in">Conectando...</string>
+    <string name="tab_overview">Resumo</string>
+    <string name="tab_ledger">Livro Caixa</string>
+    <string name="tab_division">Divisão</string>
+    <string name="tab_goals">Objetivos</string>
+    <string name="tab_debts">Dívidas</string>
+    <string name="sign_out">Sair da conta</string>
+    <string name="notification_channel_name">Lembretes do Livro Caixa</string>
+    <string name="notification_channel_desc">Notificações 3 vezes ao dia para manter seu Livro Caixa, metas e dívidas atualizados.</string>
+    <string name="notification_portrait_desc">Retrato do duende Lucky Box</string>
+    <string name="reminders_title">Lembretes Diários (3x/dia)</string>
+    <string name="reminders_subtitle">Mensagens inteligentes com seus objetivos e dívidas</string>
+    <string name="reminders_toggle_label">Ativar lembretes automáticos</string>
+    <string name="reminders_toggle_desc">Envia avisos de manhã, tarde e noite para você não esquecer de atualizar o caixa.</string>
+    <string name="reminders_grant_permission">Permitir notificações</string>
+    <string name="reminders_test_button">Testar notificação agora</string>
+    <string name="reminders_icon_desc">Configurar lembretes diários</string>
+    <string name="close_label">Fechar</string>
+</resources>
